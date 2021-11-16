@@ -6,78 +6,58 @@
 
 void menuPrincipal();
 
-//Structs tienen que ser como un grafo, hay que cambiarlo
-//Nodo creado por mi
-typedef struct colaborador colaborador;
-typedef struct posColaborador posColaborador;
-struct colaborador{
+//Struct
+typedef struct colaborador
+{
     int cedula; 
     char nombre[20];
     char apellidos[20];
     char correo[20];
     char rol[20];
     char fechaCumple[20];
-};
+}COLABORADOR;
 
-struct posColaborador{
-    struct colaborador *info;
-    struct colaborador *izq;
-    struct colaborador *der;
-};
+typedef struct nodec // Nodo donde se almacena cada pregunta
+{
+    struct nodec *next;
+    struct nodec *prev;
+    COLABORADOR info;
+} NODEC;
 
-//ESTO EN COMENTARIO ESTA MALO, HAY QUE CAMBIARLO PARA QUE SEA UN GRAFO
-//Se define raiz del arbol
-/*
-colaborador *raiz = NULL;
+NODEC *head = NULL;
 
-void insertar(int x){
-    posColaborador *nuevo;
-    nuevo = malloc(sizeof(struct posColaborador));
-    nuevo->info = x;
-    nuevo->izq = NULL;
-    nuevo->der = NULL;
-    if (raiz == NULL)
-        raiz = nuevo;
-    else
-    {
-        posColaborador *anterior, *aux;
-        anterior = NULL;
-        aux = raiz;
-        while (aux != NULL)
-        {
-            anterior = aux;
-            if (x < aux->info)
-                aux = aux->izq;
-            else
-                aux = aux->der;
-        }
-        if (x < anterior->info)
-            anterior->izq = nuevo;
-        else
-            anterior->der = nuevo;
-    }
-}*/
+NODEC *CreateNode() // funcion para crear nodo
+{
+    NODEC *temp;
+    temp = (NODEC *)malloc(sizeof(NODEC));
+    temp->next = NULL;
+    temp->prev = NULL;
+    return temp;
+}
 
-void registroColaborador(){
-    colaborador *persona;
+
+
+void registroColaborador(COLABORADOR *colaborador){
     int num;
     printf("Ingrese los datos del colaborador\n");
-    printf("Cedula: \n");
-    scanf("%d", &persona->cedula);
-    printf("Nombre: \n");
-    fgets(persona->nombre, 20, stdin);
-    printf("Apellidos: \n");
-    fgets(persona->apellidos, 20, stdin);
-    printf("Correo electronico: \n");
-    fgets(persona->correo, 20, stdin);
-    printf("Rol en la organizacion: \n");
-    fgets(persona->rol, 20, stdin);
-    printf("Fecha de cumpleanos: \n");
-    fgets(persona->fechaCumple, 20, stdin);
+    printf("Cedula: ");
+    scanf("%d%*c", &colaborador->cedula);
+    printf("Nombre: ");
+    fgets(colaborador->nombre, 20, stdin);
+    printf("Apellidos: ");
+    fgets(colaborador->apellidos, 20, stdin);
+    printf("Correo electronico: ");
+    fgets(colaborador->correo, 20, stdin);
+    printf("Rol en la organizacion: ");
+    fgets(colaborador->rol, 20, stdin);
+    printf("Fecha de cumpleanos: ");
+    fgets(colaborador->fechaCumple, 20, stdin);
+    
 
     //Menu para modificar o eliminar colaborador
-    printf("1. Modificar colaborador\n");
+    printf("\n\n1. Modificar colaborador\n");
     printf("2. Eliminar colaborador\n");
+    printf("0. Volver al menu\n");
     printf("Ingrese la opcion que desea: \n");
     scanf("%d", &num);
     if (num == 1)
@@ -90,10 +70,82 @@ void registroColaborador(){
         printf("Eligio eliminar");
         //eliminarColab();
     }
+    else
+    {
+        menuPrincipal();
+    }
+    
 }
 
 
 
+void aniadirColaborador(COLABORADOR colaborador) // agrega info de colaborador  a nodo
+{
+    NODEC *nuevoNodo;
+    nuevoNodo = CreateNode();
+    nuevoNodo->info = colaborador;
+
+    if (head == NULL)
+    {
+        head = nuevoNodo;
+    }
+    else
+    {
+        nuevoNodo->next = head;
+        head->prev = nuevoNodo;
+        head = nuevoNodo;
+    }
+}
+
+ 
+void colaboradorAarchivo() //copia informacion a .txt
+{
+    NODEC *aux = head;
+    FILE * fpuntero = fopen("colaboradores.txt", "a+");
+    if (fpuntero != NULL)
+    {
+        while (aux != NULL)
+        {
+            fwrite(&aux->info, sizeof(COLABORADOR), 1, fpuntero);
+            fprintf(fpuntero, "\n");
+            aux = aux->next;
+        }
+    }
+    fclose(fpuntero);
+}
+
+//Muestra colaboradores
+void MostrarColab(COLABORADOR colaborador)        //muestra pregunta de nodo actual
+{
+    printf("\n========================================================\n\n");
+    printf("\t\t Detalles de colaborador\n");
+    printf("========================================================\n\n");
+
+    printf("\nCedula colaborador: %d\t\n", colaborador.cedula);
+    printf("\nNombre: %s\t\n", colaborador.nombre);
+    printf("\nApellidos: %s\t\n", colaborador.apellidos);
+    printf("\nCorreo: %s\t\n", colaborador.correo);
+    printf("\nRol: %s\t\n", colaborador.rol);
+    printf("\nFecha nacimiento: %s\t\n", colaborador.fechaCumple);
+}
+
+void leerColab(NODEC *aux) //muesta los colaboradores que hay en memoria
+{
+    if (aux == NULL)
+    {
+        printf(" No hay colaboradores...\n");
+    }
+    else
+    {
+        printf(" Colaboradores disponibles\n");
+        while (aux != NULL)
+        {
+            MostrarColab(aux->info);
+            aux = aux->next;
+        }
+        printf("\n");
+    }
+}
 
 
 void menuPrincipal()        //menu principal
@@ -115,6 +167,9 @@ void menuPrincipal()        //menu principal
         printf("\t8. Chat\n");
         printf("\t9. Simulacion de la ruta del paseo\n");
         printf("\t10. Analisis de datos\n");
+        //ELIMINAR, SON PRUEBA
+        printf("\t11. Leer colaborador\n");
+        printf("\t12. Eliminar colaboradores\n");
         printf("\n\t0. SALIR\n");
         printf("\n\tIngrese una opcion: ");
         scanf("%d", &opcion);
@@ -122,7 +177,11 @@ void menuPrincipal()        //menu principal
         switch (opcion)
         {
         case 1:
-            registroColaborador();
+            printf("Eligio registrar colaborador\n");
+            COLABORADOR colaborador;
+            registroColaborador(&colaborador);
+            aniadirColaborador(colaborador);
+            colaboradorAarchivo();
             break;
         case 2:
             break;
@@ -143,6 +202,7 @@ void menuPrincipal()        //menu principal
         case 10:
             break;
         case 11: 
+            leerColab(head);
             break;
         case 12:
             break;
