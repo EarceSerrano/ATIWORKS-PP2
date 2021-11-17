@@ -4,10 +4,15 @@
 #define TRUE 1
 #define FALSE 0
 
+typedef struct colaborador COLABORADOR;
 void menuPrincipal();
+void modificarColab(COLABORADOR *colaborador);
+void eliminarColab();
+void colaboradorAarchivoMod();
+
 
 //Struct
-typedef struct colaborador
+struct colaborador
 {
     int cedula; 
     char nombre[20];
@@ -15,7 +20,7 @@ typedef struct colaborador
     char correo[20];
     char rol[20];
     char fechaCumple[20];
-}COLABORADOR;
+};
 
 typedef struct nodec // Nodo donde se almacena cada pregunta
 {
@@ -34,7 +39,6 @@ NODEC *CreateNode() // funcion para crear nodo
     temp->prev = NULL;
     return temp;
 }
-
 
 
 void registroColaborador(COLABORADOR *colaborador){
@@ -62,17 +66,13 @@ void registroColaborador(COLABORADOR *colaborador){
     scanf("%d", &num);
     if (num == 1)
     {
-        printf("Eligio modificar");
-        //modificarColab();
+        printf("Eligio modificar colaborador\n");
+        modificarColab(colaborador);
     }
     else if (num == 2)
     {
         printf("Eligio eliminar");
-        //eliminarColab();
-    }
-    else
-    {
-        menuPrincipal();
+        eliminarColab(colaborador);
     }
     
 }
@@ -114,37 +114,66 @@ void colaboradorAarchivo() //copia informacion a .txt
     fclose(fpuntero);
 }
 
-//Muestra colaboradores
-void MostrarColab(COLABORADOR colaborador)        //muestra pregunta de nodo actual
+//Modifica colaborador 
+void modificarColab(COLABORADOR *colaborador)        
 {
-    printf("\n========================================================\n\n");
-    printf("\t\t Detalles de colaborador\n");
-    printf("========================================================\n\n");
+    int num;
+    printf("Ingrese el numero de cedula del colaborador a modificar: ");
+    scanf("%d%*c", &num);
+    if (num == colaborador->cedula)
+    {
+        printf("\n========================================================\n\n");
+        printf("\t\t Detalles de colaborador\n");
+        printf("========================================================\n\n");
 
-    printf("\nCedula colaborador: %d\t\n", colaborador.cedula);
-    printf("\nNombre: %s\t\n", colaborador.nombre);
-    printf("\nApellidos: %s\t\n", colaborador.apellidos);
-    printf("\nCorreo: %s\t\n", colaborador.correo);
-    printf("\nRol: %s\t\n", colaborador.rol);
-    printf("\nFecha nacimiento: %s\t\n", colaborador.fechaCumple);
+        printf("\nCedula colaborador: %d\t\n", colaborador->cedula);
+        printf("\nNombre: %s\t\n", colaborador->nombre);
+        printf("\nApellidos: %s\t\n", colaborador->apellidos);
+        printf("\nCorreo: %s\t\n", colaborador->correo);
+        printf("\nRol: %s\t\n", colaborador->rol);
+        printf("\nFecha nacimiento: %s\t\n", colaborador->fechaCumple);
+
+        
+        printf("\nNuevo nombre: ");
+        fgets(colaborador->nombre, 20, stdin);
+        printf("\nApellidos: ");
+        fgets(colaborador->apellidos, 20, stdin);
+        printf("\nCorreo: ");
+        fgets(colaborador->correo, 20, stdin);
+        printf("\nRol: ");
+        fgets(colaborador->rol, 20, stdin);
+        printf("\nFecha nacimiento: ");
+        fgets(colaborador->fechaCumple, 20, stdin);
+    }
 }
 
-void leerColab(NODEC *aux) //muesta los colaboradores que hay en memoria
+
+
+
+//Arreglar funcion para eliminar colab en especifico
+void eliminarColab() 
 {
-    if (aux == NULL)
+    NODEC *aux = head;
+    int num;
+    printf("Ingrese el numero de cedula del colaborador a modificar: ");
+    scanf("%d", &num);
+    FILE * fpuntero = fopen("colaboradores.txt", "r+");
+    if (fpuntero != NULL)
     {
-        printf(" No hay colaboradores...\n");
-    }
-    else
-    {
-        printf(" Colaboradores disponibles\n");
         while (aux != NULL)
         {
-            MostrarColab(aux->info);
+            fwrite(&aux->info, sizeof(COLABORADOR), 1, fpuntero);
+            fprintf(fpuntero, "\n");
             aux = aux->next;
         }
-        printf("\n");
     }
+    fclose(fpuntero);
+}
+
+
+void eliminarTodoColabs(){
+    FILE * fpuntero = fopen("colaboradores.txt", "w");
+    fclose(fpuntero);
 }
 
 
@@ -168,7 +197,7 @@ void menuPrincipal()        //menu principal
         printf("\t9. Simulacion de la ruta del paseo\n");
         printf("\t10. Analisis de datos\n");
         //ELIMINAR, SON PRUEBA
-        printf("\t11. Leer colaborador\n");
+        printf("\t11. Modificar colaborador\n");
         printf("\t12. Eliminar colaboradores\n");
         printf("\n\t0. SALIR\n");
         printf("\n\tIngrese una opcion: ");
@@ -202,9 +231,9 @@ void menuPrincipal()        //menu principal
         case 10:
             break;
         case 11: 
-            leerColab(head);
             break;
         case 12:
+            eliminarTodoColabs();
             break;
 
         case 0:
