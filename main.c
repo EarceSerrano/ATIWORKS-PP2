@@ -5,9 +5,12 @@
 #define FALSE 0
 
 typedef struct colaborador COLABORADOR;
+typedef struct nodec NODEC;
 void menuPrincipal();
-void modificarColab(COLABORADOR *colaborador);
+void modificarColab(COLABORADOR *colaborador, int num);
+void modificaC(NODEC *aux);
 void eliminarColab();
+void colaboradorAarchivoMod();
 void colaboradorAarchivoMod();
 
 
@@ -22,12 +25,12 @@ struct colaborador
     char fechaCumple[20];
 };
 
-typedef struct nodec // Nodo donde se almacena cada pregunta
+struct nodec // Nodo donde se almacena cada pregunta
 {
     struct nodec *next;
     struct nodec *prev;
     COLABORADOR info;
-} NODEC;
+};
 
 NODEC *head = NULL;
 
@@ -42,7 +45,6 @@ NODEC *CreateNode() // funcion para crear nodo
 
 
 void registroColaborador(COLABORADOR *colaborador){
-    int num;
     printf("Ingrese los datos del colaborador\n");
     printf("Cedula: ");
     scanf("%d%*c", &colaborador->cedula);
@@ -56,9 +58,11 @@ void registroColaborador(COLABORADOR *colaborador){
     fgets(colaborador->rol, 20, stdin);
     printf("Fecha de cumpleanos: ");
     fgets(colaborador->fechaCumple, 20, stdin);
-    
+}
 
+void menuColabs(COLABORADOR *colaborador){
     //Menu para modificar o eliminar colaborador
+    int num;
     printf("\n\n1. Modificar colaborador\n");
     printf("2. Eliminar colaborador\n");
     printf("0. Volver al menu\n");
@@ -67,16 +71,14 @@ void registroColaborador(COLABORADOR *colaborador){
     if (num == 1)
     {
         printf("Eligio modificar colaborador\n");
-        modificarColab(colaborador);
+        modificaC(head);
     }
     else if (num == 2)
     {
         printf("Eligio eliminar");
         eliminarColab(colaborador);
     }
-    
 }
-
 
 
 void aniadirColaborador(COLABORADOR colaborador) // agrega info de colaborador  a nodo
@@ -104,22 +106,17 @@ void colaboradorAarchivo() //copia informacion a .txt
     FILE * fpuntero = fopen("colaboradores.txt", "a+");
     if (fpuntero != NULL)
     {
-        while (aux != NULL)
+        if(aux != NULL)
         {
             fwrite(&aux->info, sizeof(COLABORADOR), 1, fpuntero);
-            fprintf(fpuntero, "\n");
-            aux = aux->next;
         }
     }
     fclose(fpuntero);
 }
 
 //Modifica colaborador 
-void modificarColab(COLABORADOR *colaborador)        
+void modificarColab(COLABORADOR *colaborador, int num)        
 {
-    int num;
-    printf("Ingrese el numero de cedula del colaborador a modificar: ");
-    scanf("%d%*c", &num);
     if (num == colaborador->cedula)
     {
         printf("\n========================================================\n\n");
@@ -144,9 +141,47 @@ void modificarColab(COLABORADOR *colaborador)
         fgets(colaborador->rol, 20, stdin);
         printf("\nFecha nacimiento: ");
         fgets(colaborador->fechaCumple, 20, stdin);
+
+        colaboradorAarchivoMod();
     }
 }
 
+void colaboradorAarchivoMod() //copia informacion a .txt
+{
+    NODEC *aux = head;
+    FILE * fpuntero = fopen("colaboradores.txt", "r+");
+    if (fpuntero != NULL)
+    {
+        while (aux != NULL)
+        {
+            fwrite(&aux->info, sizeof(COLABORADOR), 1, fpuntero);
+            fprintf(fpuntero, "\n");
+            aux = aux->next;
+        }
+    }
+    fclose(fpuntero);
+}
+
+void modificaC(NODEC *aux)  //modifica la pregunta en base a su id de pregunta
+{
+    COLABORADOR *ptr, *id;
+    int num;
+    printf("Ingrese el numero de cedula del colaborador a modificar: ");
+    scanf("%d%*c", &num);
+    if (aux == NULL)
+    {
+        printf("No se encontro colaborador\n");
+    }
+    else
+    {
+        while (aux != NULL)
+        {
+            ptr = &aux->info;
+            modificarColab(ptr, num);
+            aux = aux->next;
+        }
+    }
+}
 
 
 
@@ -208,9 +243,14 @@ void menuPrincipal()        //menu principal
         case 1:
             printf("Eligio registrar colaborador\n");
             COLABORADOR colaborador;
+            NODEC *aux;
+            //ingresan datos
             registroColaborador(&colaborador);
+            //info colab a nodo
             aniadirColaborador(colaborador);
+            //guardo nodo en el archivo
             colaboradorAarchivo();
+            menuColabs(&colaborador);
             break;
         case 2:
             break;
