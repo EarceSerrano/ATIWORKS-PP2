@@ -1,3 +1,165 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct dict {
+  struct dict *left,*right;
+  char nombre[15],descripcion[20];
+}*Root=NULL;
+
+typedef struct dict equipo;
+int check(char[],char[]);
+void insert(equipo *);
+void Search();
+void view(equipo *);
+
+int check(char a[],char b[]){
+     int i,j,c;
+     for(i=0,j=0 ; a[i]!='\0'&&b[j]!='\0' ; i++,j++){
+       if(a[i]>b[j]){
+         c=1;
+         break;
+       }
+        else if(b[j]>a[i]){
+          c=-1;
+          break;
+        }
+      else
+         c=0;
+     }
+     if(c==1)
+       return 1;
+      else if(c==-1)
+        return -1;
+      else
+        return 0;
+}
+
+void Search(){
+  int flag=0;
+  equipo *ptr;
+  ptr=Root;
+  char w[10];
+  printf("\nIngrese equipo: ");
+  scanf("%s",w);
+  while(ptr!=NULL && flag==0){
+    if(check(w,ptr->nombre)>0)
+       ptr=ptr->right;
+    else if(check(w,ptr->nombre)<0)
+          ptr=ptr->left;
+    else if(check(w,ptr->nombre)==0){
+       flag=1;
+       printf("\n%s",ptr->descripcion);
+    }
+
+    }
+    if(flag==0)
+      printf("\nNo se encontro\n");
+}
+
+void insert(equipo *temp){
+  int flag=0;
+  equipo *ptr,*par;
+  ptr=Root;
+
+  if(Root==NULL)
+     Root=temp;
+  else{
+     while(ptr!=NULL ){
+       if(check(temp->nombre,ptr->nombre)>0){
+         par=ptr;
+         ptr=ptr->right;
+       }
+
+       else if(check(temp->nombre,ptr->nombre)<0)
+     {
+       par=ptr;
+       ptr=ptr->left;
+     }
+       else if(check(temp->nombre,ptr->nombre)==0){
+          flag=1;
+            printf("\nExiste!");
+          break;
+       }
+
+   }
+       if(flag==0 && ptr==NULL){
+
+         if(check(par->nombre,temp->nombre)==1)
+            par->left=temp;
+         else if(check(par->nombre,temp->nombre)==-1)
+            par->right=temp;
+       }
+
+     }
+     
+
+}
+
+void view(equipo *ptr){
+  FILE * fpuntero = fopen("equipos.txt", "a+");
+  if(Root==NULL)
+    printf("\nEquipo vacio\n");
+
+  else if(ptr !=NULL){
+   view(ptr->left);
+
+   printf("\nNombre:%s\n",ptr->nombre);
+   printf("\nDescripcion:%s\n",ptr->descripcion);
+   fwrite(&ptr->nombre, sizeof(equipo), 1, fpuntero);
+   fwrite(&ptr->descripcion, sizeof(equipo), 1, fpuntero);
+   fprintf(fpuntero, "\n");
+   fclose(fpuntero);
+   
+   view(ptr->right);
+  }
+
+}
+
+void eliminar(){
+    FILE * fpuntero = fopen("equipos.txt", "w");
+    fclose(fpuntero);
+}
+
+void equipos() {
+  int ch;
+  int argc;
+  equipo *temp;
+  while(ch!=4){
+    printf("\n1.Buscar\n2.Insertar\n3.Ver\n4.Borrar datos\n5.Salir\nIngrese una opcion: ");
+    scanf("%d",&ch);
+    switch (ch) {
+      case 1: Search();break;
+      case 2:
+      temp=(equipo*)malloc(sizeof(equipo));
+      temp->left=NULL;
+      temp->right=NULL;
+      printf("\nInserte colaborador/equipo:\n");
+      scanf("%s",temp->nombre);
+      printf("\nInserte descripcion:\n");
+      scanf("%s",temp->descripcion);
+       insert(temp);
+      break;
+      case 3:
+      view(Root);
+      break;
+      case 4:
+      eliminar();
+      break;
+      case 5:exit(0);
+    }
+  }
+  
+}
+
+int main(){
+  equipos();
+  return 0;
+}
+
+
+
+
+/* ORIGINAL
 #include<stdio.h>
 #include<stdlib.h>
 
@@ -184,4 +346,4 @@ int main()
     
     liberar(raiz);
 	return 0;
-}
+}*/
