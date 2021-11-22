@@ -7,6 +7,8 @@
 //Se nombran structs y se llaman funciones
 typedef struct colaborador COLABORADOR;
 typedef struct nodec NODEC;
+typedef struct nodeb NODEB;
+typedef struct bitacora BITACORA;
 void menuPrincipal();
 void modificarColab(COLABORADOR *colaborador, int num);
 void modificaC(NODEC *aux);
@@ -15,6 +17,8 @@ void colaboradorAarchivoMod();
 void colaboradorAarchivoMod();
 void eliminarC(NODEC *aux);
 void eliminarColab(COLABORADOR *colaborador, int num, NODEC *aux);
+void bitacoras(BITACORA *ptr);
+void aniadirBitacora(BITACORA bitacora);
 
 
 
@@ -415,6 +419,67 @@ void equipos() {
 
 //----------------------------- TERMINA REGISTRO EQUIPOS ----------------------------
 
+//--------------------------------------- BITACORA TRABAJO --------------------------------------
+struct bitacora
+{
+    int cedula;
+    char descripcion[30];
+};
+
+struct nodeb // Nodo 
+{
+    struct nodeb *next;
+    struct nodeb *prev;
+    BITACORA info;
+};
+
+NODEB *head2 = NULL;
+
+NODEB *CrearNode() // funcion para crear nodo
+{
+    NODEB *temp;
+    temp = (NODEB *)malloc(sizeof(NODEB));
+    temp->next = NULL;
+    temp->prev = NULL;
+    return temp;
+}
+
+void bitacoras(BITACORA *ptr){
+    FILE * fpuntero = fopen("colaboradores.txt", "a+");
+    printf("Rendimiento de los colaboradores!\n");
+    printf("Ingrese el numero de cedula del colaborador: ");
+    scanf("%d%*c", &ptr->cedula);
+    fprintf(fpuntero, "%d", ptr->cedula);
+    printf("\nObservacion del rendimiento: ");
+    fgets(ptr->descripcion, 30, stdin);
+    fwrite(&ptr->descripcion, sizeof(BITACORA), 1, fpuntero);
+
+    fclose(fpuntero);
+}
+
+void aniadirBitacora(BITACORA bitacora) // agrega info de colaborador  a nodo
+{
+    NODEB *nuevoNodo;
+    nuevoNodo = CrearNode();
+    nuevoNodo->info = bitacora;
+
+    if (head2 == NULL)
+    {
+        head2 = nuevoNodo;
+    }
+    else
+    {
+        nuevoNodo->next = head2;
+        head2->prev = nuevoNodo;
+        head2 = nuevoNodo;
+    }
+}
+
+
+
+
+//--------------------------------------- TERMINA BITACORA TRABAJO ------------------------------
+
 //menu principal
 void menuPrincipal()       
 {
@@ -427,17 +492,14 @@ void menuPrincipal()
         printf("\t\t\t--------------\n");
         printf("\n\t1. Registrar colaborador\n");
         printf("\t2. Registro de equipo\n");
-        printf("\t3. Archivos de los colaboradores\n");
-        printf("\t4. Visualizacion del arbol\n");
-        printf("\t5. Operaciones de archivos\n");
-        printf("\t6. Domicilios de colaboradores\n");
-        printf("\t7. Registro de bitacora de trabajo\n");
-        printf("\t8. Chat\n");
-        printf("\t9. Simulacion de la ruta del paseo\n");
-        printf("\t10. Analisis de datos\n");
+        printf("\t3. Arbol de archivos\n");
+        printf("\t4. Catalogos para lugares de domicilio\n");
+        printf("\t5. Bitacora de rendimiento\n");
+        printf("\t6. Chat\n");
+        printf("\t7. Ruta del paseo\n");
+        printf("\t8. Analisis de datos\n");
         //ELIMINAR, SON PRUEBA
-        printf("\t11. Modificar colaborador\n");
-        printf("\t12. Eliminar colaboradores\n");
+        printf("\t9. Eliminar colaboradores\n");
         printf("\n\t0. SALIR\n");
         printf("\n\tIngrese una opcion: ");
         scanf("%d", &opcion);
@@ -465,6 +527,10 @@ void menuPrincipal()
         case 4:
             break;
         case 5:
+            printf("Eligio bitacora de trabajo\n");
+            BITACORA ptr;
+            bitacoras(&ptr);
+            aniadirBitacora(ptr);
             break;
         case 6:
             break;
@@ -473,15 +539,8 @@ void menuPrincipal()
         case 8:
             break;
         case 9:
-            break;
-        case 10:
-            break;
-        case 11: 
-            break;
-        case 12:
             eliminarTodoColabs();
             break;
-
         case 0:
             repetir = FALSE;
             break;
