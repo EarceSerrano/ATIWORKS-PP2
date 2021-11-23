@@ -9,6 +9,8 @@ typedef struct colaborador COLABORADOR;
 typedef struct nodec NODEC;
 typedef struct nodeb NODEB;
 typedef struct bitacora BITACORA;
+typedef struct AdjListNode nodo;
+typedef struct AdjListNodo ruta;
 void menuPrincipal();
 void modificarColab(COLABORADOR *colaborador, int num);
 void modificaC(NODEC *aux);
@@ -19,6 +21,7 @@ void eliminarC(NODEC *aux);
 void eliminarColab(COLABORADOR *colaborador, int num, NODEC *aux);
 void bitacoras(BITACORA *ptr);
 void aniadirBitacora(BITACORA bitacora);
+void menuDomicilio();
 
 
 
@@ -420,10 +423,13 @@ void equipos() {
 //----------------------------- TERMINA REGISTRO EQUIPOS ----------------------------
 
 //----------------------------- DOMICILIOS DE COLABORADORES -------------------------
+// LUGAR
 // A structure to represent an adjacency list node
 struct AdjListNode
 {
-    int dest;
+    int codigo;
+    char nomLugar[20];
+    int codPostal;
     struct AdjListNode* next;
 };
   
@@ -444,11 +450,13 @@ struct Graph
 };
   
 // A utility function to create a new adjacency list node
-struct AdjListNode* newAdjListNode(int dest)
+struct AdjListNode* newAdjListNode(int codigo, char nomLugar[20], int codPostal)
 {
     struct AdjListNode* newNode =
      (struct AdjListNode*) malloc(sizeof(struct AdjListNode));
-    newNode->dest = dest;
+    newNode->codigo = codigo;
+    strcpy(newNode->nomLugar, nomLugar);
+    newNode->codPostal = codPostal;
     newNode->next = NULL;
     return newNode;
 }
@@ -475,40 +483,334 @@ struct Graph* createGraph(int V)
 }
   
 // Adds an edge to an undirected graph
-void addEdge(struct Graph* graph, int src, int dest)
+void addEdge(struct Graph* graph)
 {
+    int vertice, codigo, codPostal;
+    char nomLugar[20];
+    printf("Vertice en el cual va a insertar: ");
+    scanf("%d", &vertice);
+    printf("\nInserte codigo: ");
+    scanf("%d%*c", &codigo);
+    printf("\nInserte nombre del lugar: ");
+    fgets(nomLugar, 20, stdin);
+    printf("\nInserte codigo postal: ");
+    scanf("%d", &codPostal);
+    printf("\n");
     // Add an edge from src to dest.  A new node is 
     // added to the adjacency list of src.  The node
     // is added at the beginning
-    struct AdjListNode* newNode = newAdjListNode(dest);
-    newNode->next = graph->array[src].head;
-    graph->array[src].head = newNode;
+    struct AdjListNode* newNode = newAdjListNode(codigo, nomLugar, codPostal);
+    newNode->next = graph->array[vertice].head;
+    graph->array[vertice].head = newNode;
   
     // Since graph is undirected, add an edge from
     // dest to src also
-    newNode = newAdjListNode(src);
-    newNode->next = graph->array[dest].head;
-    graph->array[dest].head = newNode;
+    newNode = newAdjListNode(vertice, nomLugar, codPostal);
+    newNode->next = graph->array[codigo].head;
+    graph->array[codigo].head = newNode;
+
+    
 }
+
+struct AdjListNode* newAdjListNodeMod(int codigo, char nomLugar[20], int codPostal)
+{
+    struct AdjListNode* newNode =
+     (struct AdjListNode*) malloc(sizeof(struct AdjListNode));
+    newNode->codigo = codigo;
+    strcpy(newNode->nomLugar, nomLugar);
+    newNode->codPostal = codPostal;
+    newNode->next = NULL;
+    return newNode;
+}
+
+void modificaLugar(struct Graph* graph)
+{
+    int vertice, codigo, codPostal;
+    char nomLugar[20];
+    printf("Nombre del lugar a modificar: ");
+    fgets(nomLugar, 20, stdin);
+    printf("Vertice: ");
+    scanf("%d", &vertice);
+    printf("\nInserte nuevo codigo: ");
+    scanf("%d%*c", &codigo);
+    printf("\nInserte nuevo nombre del lugar: ");
+    fgets(nomLugar, 20, stdin);
+    printf("\nInserte nuevo codigo postal: ");
+    scanf("%d", &codPostal);
+    printf("\n");
+    // Add an edge from src to dest.  A new node is 
+    // added to the adjacency list of src.  The node
+    // is added at the beginning
+    struct AdjListNode* newNode = newAdjListNodeMod(codigo, nomLugar, codPostal);
+    newNode->next = graph->array[vertice].head;
+    graph->array[vertice].head = newNode;
   
-// A utility function to print the adjacency list 
-// representation of graph
+    // Since graph is undirected, add an edge from
+    // dest to src also
+    newNode = newAdjListNodeMod(vertice, nomLugar, codPostal);
+    newNode->next = graph->array[codigo].head;
+    graph->array[codigo].head = newNode;
+}
+
 void printGraph(struct Graph* graph)
 {
     int v;
     for (v = 0; v < graph->V; ++v)
     {
         struct AdjListNode* pCrawl = graph->array[v].head;
-        printf("\n Adjacency list of vertex %d\n head ", v);
+        
+        printf("\n Lista de adyacencia del vertice %d\n head ", v);
         while (pCrawl)
         {
-            printf("-> %d", pCrawl->dest);
+            FILE * fpuntero = fopen("domicilios.txt", "a+");
+            printf("-> %d, %s, %d", pCrawl->codigo, pCrawl->nomLugar, pCrawl->codPostal);
+            fprintf(fpuntero, "%d", pCrawl->codigo);
+            fprintf(fpuntero, "\n");
+            fwrite(&pCrawl->nomLugar, sizeof(nodo), 1, fpuntero);
+            fprintf(fpuntero, "%d", pCrawl->codPostal);
+            fprintf(fpuntero, "\n");
             pCrawl = pCrawl->next;
+            fclose(fpuntero);
         }
         printf("\n");
     }
 }
 
+  
+// A utility function to print the adjacency list 
+// representation of graph
+void printGraphMod(struct Graph* graph)
+{
+    int v;
+    for (v = 0; v < graph->V; ++v)
+    {
+        struct AdjListNode* pCrawl = graph->array[v].head;
+        
+        printf("\n Lista de adyacencia del vertice %d\n head ", v);
+        while (pCrawl)
+        {
+            FILE * fpuntero = fopen("domicilios.txt", "r+");
+            printf("-> %d, %s, %d", pCrawl->codigo, pCrawl->nomLugar, pCrawl->codPostal);
+            fprintf(fpuntero, "%d", pCrawl->codigo);
+            fprintf(fpuntero, "\n");
+            fwrite(&pCrawl->nomLugar, sizeof(nodo), 1, fpuntero);
+            fprintf(fpuntero, "%d", pCrawl->codPostal);
+            fprintf(fpuntero, "\n");
+            pCrawl = pCrawl->next;
+            fclose(fpuntero);
+        }
+        printf("\n");
+    }
+}
+
+void printGraphElim(struct Graph* graph)
+{
+    int v;
+    char nom[15];
+    printf("Inserte nombre del lugar por eliminar: ");
+    scanf("%s", nom);
+    for (v = 0; v < graph->V; ++v)
+    {
+        struct AdjListNode* pCrawl = graph->array[v].head;
+        
+        printf("\n Lista de adyacencia del vertice %d\n head ", v);
+        while (pCrawl)
+        {
+            FILE * fpuntero = fopen("domicilios.txt", "r+");
+            free(pCrawl);
+            fwrite(&pCrawl, sizeof(nodo), 1, fpuntero);
+            pCrawl = pCrawl->next;
+            fclose(fpuntero);
+        }
+        printf("\n");
+    }
+}
+
+void domicilios(){
+    int V = 2;
+    struct Graph* graph = createGraph(V);
+    addEdge(graph);
+    addEdge(graph);
+    //addEdge(graph);
+
+    printGraph(graph);
+}
+
+void domiciliosMod(){
+    int V = 1;
+    struct Graph* graph = createGraph(V);
+    modificaLugar(graph);
+
+    printGraphMod(graph);
+}
+
+void domiciliosElim(){
+    int V = 1;
+    struct Graph* graph = createGraph(V);
+
+    printGraphElim(graph);
+}
+
+// RUTA 
+
+
+struct AdjListNodo
+{
+    char origen[20], destino[20];
+    int tiempo, dist;
+    char tipo[12];
+    struct AdjListNodo* next;
+};
+  
+// A structure to represent an adjacency list
+struct AdjLista
+{
+    struct AdjListNodo *head; 
+};
+  
+// A structure to represent a graph. A graph
+// is an array of adjacency lists.
+// Size of array will be V (number of vertices 
+// in graph)
+struct Grafo
+{
+    int V;
+    struct AdjLista* array;
+};
+
+struct AdjListNodo* newAdjListNodo(char origen[20], char destino[20], int tiempo, int dist, char tipo[12])
+{
+    struct AdjListNodo* newNode =
+     (struct AdjListNodo*) malloc(sizeof(struct AdjListNodo));
+    strcpy(newNode->origen, origen);
+    strcpy(newNode->destino, destino);
+    newNode->tiempo = tiempo;
+    newNode->dist = dist;
+    strcpy(newNode->tipo, tipo);
+    newNode->next = NULL;
+    return newNode;
+}
+
+// A utility function that creates a graph of V vertices
+struct Grafo* crearGrafo(int V)
+{
+    struct Grafo* graph = 
+        (struct Grafo*) malloc(sizeof(struct Grafo));
+    graph->V = V;
+  
+    // Create an array of adjacency lists.  Size of 
+    // array will be V
+    graph->array = 
+      (struct AdjLista*) malloc(V * sizeof(struct AdjLista));
+  
+    // Initialize each adjacency list as empty by 
+    // making head as NULL
+    int i;
+    for (i = 0; i < V; ++i)
+        graph->array[i].head = NULL;
+  
+    return graph;
+}
+
+void addEdges(struct Grafo* graph)
+{
+    int vertice;
+    char origen[20], destino[20];
+    int tiempo, dist;
+    char tipo[12];
+    printf("Vertice en el cual va a insertar: ");
+    scanf("%d%*c", &vertice);
+    printf("\nOrigen: ");
+    fgets(origen, 20, stdin);
+    printf("\nDestino: ");
+    fgets(destino, 20, stdin);
+    printf("\nTiempo que durara en minutos: ");
+    scanf("%d", &tiempo);
+    printf("\nDistancia en Km: ");
+    scanf("%d%*c", &dist);
+    printf("\nTipo de ruta (terrestre, aerea, maritima): ");
+    fgets(tipo, 20, stdin);
+    printf("\n");
+    // Add an edge from src to dest.  A new node is 
+    // added to the adjacency list of src.  The node
+    // is added at the beginning
+    struct AdjListNodo* newNode = newAdjListNodo(origen, destino, tiempo, dist, tipo);
+    newNode->next = graph->array[vertice].head;
+    graph->array[vertice].head = newNode;
+  
+    // Since graph is undirected, add an edge from
+    /* dest to src also
+    newNode = newAdjListNodo(vertice, nomLugar, codPostal);
+    newNode->next = graph->array[codigo].head;
+    graph->array[codigo].head = newNode;*/
+}
+
+void printGrafo(struct Grafo* graph)
+{
+    int v;
+    for (v = 0; v < graph->V; ++v)
+    {
+        struct AdjListNodo* pCrawl = graph->array[v].head;
+        
+        printf("\n Lista de adyacencia del vertice %d\n head ", v);
+        while (pCrawl)
+        {
+            FILE * fpuntero = fopen("domicilios.txt", "a+");
+            printf("-> %s, %s, %d, %d, %s", pCrawl->origen, pCrawl->destino, pCrawl->tiempo, pCrawl->dist, pCrawl->tipo);
+            fwrite(&pCrawl->origen, sizeof(ruta), 1, fpuntero);
+            fwrite(&pCrawl->destino, sizeof(ruta), 1, fpuntero);
+            fprintf(fpuntero, "%d", pCrawl->tiempo);
+            fprintf(fpuntero, "\n");
+            fprintf(fpuntero, "%d", pCrawl->dist);
+            fprintf(fpuntero, "\n");
+            fwrite(&pCrawl->tipo, sizeof(ruta), 1, fpuntero);
+            pCrawl = pCrawl->next;
+            fclose(fpuntero);
+        }
+        printf("\n");
+    }
+}
+
+void domiciliosRuta(){
+    int V = 2;
+    struct Grafo* graph = crearGrafo(V);
+    addEdges(graph);
+    addEdges(graph);
+    //addEdge(graph);
+
+    printGrafo(graph);
+}
+
+void menuDomicilio(){
+    int num;
+    while(num!=4){
+    printf("\n1.Registrar lugar\n2.Modificar lugar\n3.Borrar lugar\n4.Registrar ruta\n5.Modificar ruta\n6.Eliminar ruta\n7.Salir\nIngrese una opcion: ");
+    scanf("%d%*c",&num);
+    switch (num) {
+      case 1: 
+      domicilios();
+      break;
+      case 2:
+      domiciliosMod();
+      break;
+      case 3:
+      printf("Eliminar lugar\n");
+      domiciliosElim();
+      //FILE * fpuntero = fopen("domicilios.txt", "w+");
+      //fclose(fpuntero);
+      break;
+      case 4:
+      domiciliosRuta();
+      break;
+      case 5:
+      break;
+      case 6:
+      break;
+      case 7:
+      menuPrincipal();
+    }
+  }
+}
 //----------------------------- TERMINA DOMICILIOS DE COLABORADORES ---------------------------
 
 //--------------------------------------- BITACORA TRABAJO --------------------------------------
@@ -653,6 +955,7 @@ void menuPrincipal()
         case 3:
             break;
         case 4:
+            menuDomicilio();
             break;
         case 5:
             printf("Eligio bitacora de trabajo\n");
