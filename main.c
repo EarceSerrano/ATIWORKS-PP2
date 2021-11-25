@@ -11,6 +11,7 @@ typedef struct nodeb NODEB;
 typedef struct bitacora BITACORA;
 typedef struct AdjListNode nodo;
 typedef struct AdjListNodo ruta;
+typedef struct Grafo graph;
 void menuPrincipal();
 void modificarColab(COLABORADOR *colaborador, int num);
 void modificaC(NODEC *aux);
@@ -22,7 +23,8 @@ void eliminarColab(COLABORADOR *colaborador, int num, NODEC *aux);
 void bitacoras(BITACORA *ptr);
 void aniadirBitacora(BITACORA bitacora);
 void menuDomicilio();
-
+struct AdjListNodo* newAdjListNodoMod(char origen[20], char destino[20], int tiempo, int dist, char tipo[12]);
+void modificaRuta(struct Grafo* graph);
 
 
 // ----------------------- REGISTRO COLABORADOR ------------------------------
@@ -262,8 +264,13 @@ void eliminarC(NODEC *aux)
 //Elimina todos los colaboradores
 void eliminarTodoColabs(){
     FILE * fpuntero = fopen("colaboradores.txt", "w");
-    
     fclose(fpuntero);
+    FILE * fp = fopen("domicilioLugar.txt", "w");
+    fclose(fp);
+    FILE * fpt = fopen("domicilioRuta.txt", "w");
+    fclose(fpt);
+    FILE * fptr = fopen("equipos.txt", "w");
+    fclose(fptr);
 }
 
 // ----------------------- TERMINA REGISTRO COLABORADOR ------------------------------
@@ -492,7 +499,7 @@ void addEdge(struct Graph* graph)
     printf("\nInserte codigo: ");
     scanf("%d%*c", &codigo);
     printf("\nInserte nombre del lugar: ");
-    fgets(nomLugar, 20, stdin);
+    scanf("%s", nomLugar);
     printf("\nInserte codigo postal: ");
     scanf("%d", &codPostal);
     printf("\n");
@@ -534,7 +541,7 @@ void modificaLugar(struct Graph* graph)
     printf("\nInserte nuevo codigo: ");
     scanf("%d%*c", &codigo);
     printf("\nInserte nuevo nombre del lugar: ");
-    fgets(nomLugar, 20, stdin);
+    scanf("%s", nomLugar);
     printf("\nInserte nuevo codigo postal: ");
     scanf("%d", &codPostal);
     printf("\n");
@@ -562,7 +569,7 @@ void printGraph(struct Graph* graph)
         printf("\n Lista de adyacencia del vertice %d\n head ", v);
         while (pCrawl)
         {
-            FILE * fpuntero = fopen("domicilios.txt", "a+");
+            FILE * fpuntero = fopen("domicilioLugar.txt", "a+");
             printf("-> %d, %s, %d", pCrawl->codigo, pCrawl->nomLugar, pCrawl->codPostal);
             fprintf(fpuntero, "%d", pCrawl->codigo);
             fprintf(fpuntero, "\n");
@@ -589,7 +596,7 @@ void printGraphMod(struct Graph* graph)
         printf("\n Lista de adyacencia del vertice %d\n head ", v);
         while (pCrawl)
         {
-            FILE * fpuntero = fopen("domicilios.txt", "r+");
+            FILE * fpuntero = fopen("domicilioLugar.txt", "r+");
             printf("-> %d, %s, %d", pCrawl->codigo, pCrawl->nomLugar, pCrawl->codPostal);
             fprintf(fpuntero, "%d", pCrawl->codigo);
             fprintf(fpuntero, "\n");
@@ -616,8 +623,9 @@ void printGraphElim(struct Graph* graph)
         printf("\n Lista de adyacencia del vertice %d\n head ", v);
         while (pCrawl)
         {
-            FILE * fpuntero = fopen("domicilios.txt", "r+");
-            free(pCrawl);
+            FILE * fpuntero = fopen("domicilioLugar.txt", "r+");
+            free(head);
+            printf("-> %d, %s, %d", pCrawl->codigo, pCrawl->nomLugar, pCrawl->codPostal);
             fwrite(&pCrawl, sizeof(nodo), 1, fpuntero);
             pCrawl = pCrawl->next;
             fclose(fpuntero);
@@ -721,15 +729,15 @@ void addEdges(struct Grafo* graph)
     printf("Vertice en el cual va a insertar: ");
     scanf("%d%*c", &vertice);
     printf("\nOrigen: ");
-    fgets(origen, 20, stdin);
+    scanf("%s", origen);
     printf("\nDestino: ");
-    fgets(destino, 20, stdin);
+    scanf("%s", destino);
     printf("\nTiempo que durara en minutos: ");
     scanf("%d", &tiempo);
     printf("\nDistancia en Km: ");
     scanf("%d%*c", &dist);
     printf("\nTipo de ruta (terrestre, aerea, maritima): ");
-    fgets(tipo, 20, stdin);
+    scanf("%s", tipo);
     printf("\n");
     // Add an edge from src to dest.  A new node is 
     // added to the adjacency list of src.  The node
@@ -755,7 +763,7 @@ void printGrafo(struct Grafo* graph)
         printf("\n Lista de adyacencia del vertice %d\n head ", v);
         while (pCrawl)
         {
-            FILE * fpuntero = fopen("domicilios.txt", "a+");
+            FILE * fpuntero = fopen("domicilioRuta.txt", "a+");
             printf("-> %s, %s, %d, %d, %s", pCrawl->origen, pCrawl->destino, pCrawl->tiempo, pCrawl->dist, pCrawl->tipo);
             fwrite(&pCrawl->origen, sizeof(ruta), 1, fpuntero);
             fwrite(&pCrawl->destino, sizeof(ruta), 1, fpuntero);
@@ -781,6 +789,120 @@ void domiciliosRuta(){
     printGrafo(graph);
 }
 
+
+
+struct AdjListNodo* newAdjListNodoMod(char origen[20], char destino[20], int tiempo, int dist, char tipo[12])
+{
+    struct AdjListNodo* newNode =
+     (struct AdjListNodo*) malloc(sizeof(struct AdjListNodo));
+    strcpy(newNode->origen, origen);
+    strcpy(newNode->destino, destino);
+    newNode->tiempo = tiempo;
+    newNode->dist = dist;
+    strcpy(newNode->tipo, tipo);
+    newNode->next = NULL;
+    return newNode;
+}
+
+void modificaRuta(struct Grafo* graph)
+{
+    int vertice;
+    char origen[20], destino[20];
+    int tiempo, dist;
+    char tipo[12];
+    printf("Vertice en el cual va a insertar: ");
+    scanf("%d%*c", &vertice);
+    printf("\nNuevo origen: ");
+    scanf("%s", origen);
+    printf("\nNuevo destino: ");
+    scanf("%s", destino);
+    printf("\nNuevo tiempo que durara en minutos: ");
+    scanf("%d", &tiempo);
+    printf("\nNueva distancia en Km: ");
+    scanf("%d%*c", &dist);
+    printf("\nNuevo tipo de ruta (terrestre, aerea, maritima): ");
+    scanf("%s", tipo);
+    printf("\n");
+    // Add an edge from src to dest.  A new node is 
+    // added to the adjacency list of src.  The node
+    // is added at the beginning
+    struct AdjListNodo* newNode = newAdjListNodoMod(origen, destino, tiempo, dist, tipo);
+    newNode->next = graph->array[vertice].head;
+    graph->array[vertice].head = newNode;
+  
+    // Since graph is undirected, add an edge from
+    /* dest to src also
+    newNode = newAdjListNodo(vertice, nomLugar, codPostal);
+    newNode->next = graph->array[codigo].head;
+    graph->array[codigo].head = newNode;*/
+}
+
+void printGrafoMod(struct Grafo* graph)
+{
+    int v;
+    for (v = 0; v <= graph->V; ++v)
+    {
+        struct AdjListNodo* pCrawl = graph->array[v].head;
+        
+        printf("\n Lista de adyacencia del vertice %d\n head ", v);
+        while (pCrawl)
+        {
+            FILE * fpuntero = fopen("domicilioRuta.txt", "r+");
+            printf("-> %s, %s, %d, %d, %s", pCrawl->origen, pCrawl->destino, pCrawl->tiempo, pCrawl->dist, pCrawl->tipo);
+            fwrite(&pCrawl->origen, sizeof(ruta), 1, fpuntero);
+            fwrite(&pCrawl->destino, sizeof(ruta), 1, fpuntero);
+            fprintf(fpuntero, "%d", pCrawl->tiempo);
+            fprintf(fpuntero, "\n");
+            fprintf(fpuntero, "%d", pCrawl->dist);
+            fprintf(fpuntero, "\n");
+            fwrite(&pCrawl->tipo, sizeof(ruta), 1, fpuntero);
+            pCrawl = pCrawl->next;
+            fclose(fpuntero);
+        }
+        printf("\n");
+    }
+}
+
+void domiciliosRutaMod(){
+    int V = 1;
+    struct Grafo* graph = crearGrafo(V);
+    modificaRuta(graph);
+
+    printGrafoMod(graph);
+}
+
+void printGrafoElim(struct Grafo* grafo)
+{
+    int v;
+    char origen[15];
+    printf("Inserte origen por eliminar: ");
+    scanf("%s", origen);
+    for (v = 0; v < grafo->V; ++v)
+    {
+        struct AdjListNodo* pCrawl = grafo->array[v].head;
+        
+        printf("\n Lista de adyacencia del vertice %d\n head ", v);
+        while (pCrawl)
+        {
+            FILE * fpuntero = fopen("domicilioRuta.txt", "r+");
+            free(head);
+            printf("-> %s, %s, %d, %d, %s", pCrawl->origen, pCrawl->destino, pCrawl->tiempo, pCrawl->dist, pCrawl->tipo);
+            fwrite(&pCrawl, sizeof(ruta), 1, fpuntero);
+            pCrawl = pCrawl->next;
+            fclose(fpuntero);
+        }
+        printf("\n");
+    }
+}
+
+void domiciliosElimRuta(){
+    int V = 1;
+    struct Grafo* grafo = crearGrafo(V);
+
+    printGrafoElim(grafo);
+}
+
+
 void menuDomicilio(){
     int num;
     while(num!=4){
@@ -796,15 +918,20 @@ void menuDomicilio(){
       case 3:
       printf("Eliminar lugar\n");
       domiciliosElim();
-      //FILE * fpuntero = fopen("domicilios.txt", "w+");
+      //FILE * fpuntero = fopen("domicilioLugar.txt", "w+");
       //fclose(fpuntero);
       break;
       case 4:
       domiciliosRuta();
       break;
       case 5:
+      domiciliosRutaMod();
       break;
       case 6:
+      printf("Eliminar ruta\n");
+      domiciliosElimRuta();
+      //FILE * fptr = fopen("domicilioRuta.txt", "w+");
+      //fclose(fptr);
       break;
       case 7:
       menuPrincipal();
@@ -885,7 +1012,7 @@ void chat(){
   scanf("%s",y);
   printf("\nIngrese nombre del colaborador receptor: ");
   scanf("%s%*c",w);
-  while(ptr!=NULL && flag==0){
+  while(flag==0){
     if(check(w,ptr->nombre)>0)
        ptr=ptr->right;
     else if(check(w,ptr->nombre)<0)
@@ -903,7 +1030,6 @@ void chat(){
     }
     if(flag==0)
       printf("\nNo se puede establecer conexion con el colaborador\n");
-      //Devolver recorrido
 }
 
 
@@ -914,6 +1040,7 @@ void chat(){
 void menuPrincipal()       
 {
     int opcion;
+    int cantMensajes = 0;
     char repetir = TRUE;
 
     do
@@ -929,7 +1056,7 @@ void menuPrincipal()
         printf("\t7. Ruta del paseo\n");
         printf("\t8. Analisis de datos\n");
         //ELIMINAR, SON PRUEBA
-        printf("\t9. Eliminar colaboradores\n");
+        printf("\t9. Eliminar contenido txts\n");
         printf("\n\t0. SALIR\n");
         printf("\n\tIngrese una opcion: ");
         scanf("%d", &opcion);
@@ -965,10 +1092,42 @@ void menuPrincipal()
             break;
         case 6:
             chat();
+            cantMensajes += 1;
             break;
         case 7:
             break;
         case 8:
+            printf("\nEligio analisis de datos\n");
+            int numero = 0;
+            while(numero!=7){
+                printf("1. Cantidad mensajes\n");
+                printf("2. Promedio de lugares que se visitan en rutas de paseo\n");
+                printf("3. Cantidad de archivos en total\n");
+                printf("4. Cantidad de archivos en promedio\n");
+                printf("5. Promedio de colaboradores en equipo\n");
+                printf("6. Top 5 con mayor cantidad de colaboradores\n");
+                printf("7. Salir\n");
+                printf("Ingrese opcion: ");
+                scanf("%d",&numero);
+                switch (numero) {
+                    case 1: 
+                        printf("La cantidad de mensajes enviados es: %d\n\n", cantMensajes);
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        break;
+                    case 5:
+                        break;
+                    case 6:
+                        break;
+                    case 7:
+                        numero = 7;
+                        break;
+                    }
+            }
             break;
         case 9:
             eliminarTodoColabs();
